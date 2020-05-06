@@ -1,6 +1,6 @@
 <template>
   <div class="city_body">
-    <div class="city_list">
+    <!-- <div class="city_list">
       <div class="city_hot">
         <h2>热门城市</h2>
         <ul class="clearfix">
@@ -15,7 +15,6 @@
         </ul>
       </div>
       <div class="city_sort">
-        
         <div>
           <h2>A</h2>
           <ul>
@@ -183,40 +182,40 @@
             <li>保定</li>
           </ul>
           <div>
-          <h2>V</h2>
-          <ul>
-            <li>北京</li>
-            <li>保定</li>
-          </ul>
-        </div>
-        <div>
-          <h2>W</h2>
-          <ul>
-            <li>北京</li>
-            <li>保定</li>
-          </ul>
-        </div>
-        <div>
-          <h2>X</h2>
-          <ul>
-            <li>北京</li>
-            <li>保定</li>
-          </ul>
-        </div>
-        <div>
-          <h2>Y</h2>
-          <ul>
-            <li>北京</li>
-            <li>保定</li>
-          </ul>
-        </div>
-        <div>
-          <h2>Z</h2>
-          <ul>
-            <li>北京</li>
-            <li>保定</li>
-          </ul>
-        </div>
+            <h2>V</h2>
+            <ul>
+              <li>北京</li>
+              <li>保定</li>
+            </ul>
+          </div>
+          <div>
+            <h2>W</h2>
+            <ul>
+              <li>北京</li>
+              <li>保定</li>
+            </ul>
+          </div>
+          <div>
+            <h2>X</h2>
+            <ul>
+              <li>北京</li>
+              <li>保定</li>
+            </ul>
+          </div>
+          <div>
+            <h2>Y</h2>
+            <ul>
+              <li>北京</li>
+              <li>保定</li>
+            </ul>
+          </div>
+          <div>
+            <h2>Z</h2>
+            <ul>
+              <li>北京</li>
+              <li>保定</li>
+            </ul>
+          </div>
         </div>
       </div>
     </div>
@@ -249,7 +248,31 @@
         <li>Y</li>
         <li>Z</li>
       </ul>
+    </div> -->
+
+    <div class="city_list">
+      <div class="city_hot">
+        <h2>热门城市</h2>
+        <ul class="clearfix">
+          <li v-for="item in hotList" :key='item.id'>{{item.nm}}</li>
+        </ul>
+      </div>
+
+      <div class="city_sort" ref='city_sort'>
+        <div v-for="item in cityList" :key="item.index">
+          <h2>{{item.index}}</h2>
+          <ul>
+            <li v-for="itemList in item.list" :key="itemList.id">{{itemList.nm}}</li>
+          </ul>
+        </div>
+      </div>
     </div>
+    <div class="city_index">
+        <ul>
+          <!-- for 里的index 是点击的字母下标 ,和Key里的不是一个, touchshart 手机点击事件 -->
+          <li v-for="(item, index) in cityList" :key="item.index" @touchstart="handleToIndex(index)">{{item.index}}</li>
+        </ul>
+      </div>
   </div>
 </template>
 
@@ -257,11 +280,112 @@
 <script>
 export default {
   name: "city",
-
-  data() {
-    return {};
+  mounted() {
+    this.axios.get("/api/cityList").then(res => {
+      // 原生JS 实现地区按字母分类
+      // console.log(res);
+      // 1. 做个判断, 请求数据是否正常
+      var msg = res.data.msg;
+      if (msg === "ok") {
+        var cities = res.data.data.cities;
+        //获得返回结构集 调用分类方法
+        var { cityList, hotList } = this.formatCityList(cities);
+        // 数据绑定  --映射
+        this.cityList = cityList;
+        this.hotList = hotList;
+      }
+    });
   },
-  methods: {}
+  data() {
+    return {
+      cityList: [],
+      hotList: []
+    };
+  },
+  methods: {
+    // 2. 原生JS 实现地区按字母分类  方法
+    formatCityList(cities) {
+      // 2.1  结构集
+      var cityList = []; //城市
+      var hotList = []; // 热门城市
+
+      // 检索热门城市
+      for (var i = 0; i < cities.length; i++) {
+        // isHot: 1  热门城市
+        if (cities[i].isHot === 1) {
+          hotList.push(cities[i]);
+        }
+      }
+
+      //2.2 循环传过来的数组
+      for (var i = 0; i < cities.length; i++) {
+        // 根据数据中 py {"py": "beijing"} 第一个字母来决定 哪个在哪个字母分组,转换成大写
+        var firstLetter = cities[i].py.substring(0, 1).toUpperCase();
+
+        // 判断获取的字母在不在结构集中
+        if (toCom(firstLetter)) {
+          // 新添加索引
+          //  不在结构集中,走if
+          cityList.push({
+            index: firstLetter,
+            list: [{ nm: cities[i].nm, id: cities[i].id }]
+          });
+        } else {
+          // 累加到已有索引
+          //在结构集中走else
+          for (var j = 0; j < cityList.length; j++) {
+            if (cityList[j].index === firstLetter) {
+              cityList[j].list.push({ nm: cities[i].nm, id: cities[i].id });
+            }
+          }
+        }
+      }
+
+      // 按字母A-Z排序
+      cityList.sort((n1, n2) => {
+        // 拿索引进行比较  , 字母可以比较
+        if (n1.index > n2.index) {
+          //如果n2小
+          return 1;
+        } else if (n1.index < n2.index) {
+          //  如果 n2 大
+          return -1;
+        } else {
+          // 如果相等
+          return 0;
+        }
+      });
+
+      //获取第一个字母对比
+      function toCom(firstLetter) {
+        // 遍历
+        for (var i = 0; i < cityList.length; i++) {
+          //判断  进行比对
+          if (cityList[i].index === firstLetter) {
+            // 比对成功, 已存在,在此累加
+            return false;
+          }
+        }
+        // 新添加索引
+        return true;
+      }
+      //  把得到的结构反馈出去
+      return {
+        cityList,
+        hotList
+      };
+      // console.log(cityList);
+      // console.log(hotList);
+    },
+
+    // 右边字母点击 对应字母定位最顶端事件
+    handleToIndex(index){
+      // 通过$refs 方法获得 h2  ,上面必须添加ref 属性 
+      var h2 = this.$refs.city_sort.getElementsByTagName('h2');
+      // 设置父元素滚动的位置
+      this.$refs.city_sort.parentNode.scrollTop = h2[index].offsetTop;
+    }
+  }
 };
 </script>
 
@@ -335,6 +459,5 @@ export default {
   justify-content: center;
   text-align: center;
   border-left: 1px #e6e6e6 solid;
-  
 }
 </style>
