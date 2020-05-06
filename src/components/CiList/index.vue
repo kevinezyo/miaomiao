@@ -1,7 +1,7 @@
 <template>
   <div class="cinema_body">
     <ul>
-      <li>
+      <!-- <li>
         <div>
           <span>大地影院(澳东世纪店)</span>
           <span class="q">
@@ -16,6 +16,22 @@
             <div>折扣卡</div>
           </div>
         </div>
+      </li>-->
+      <li v-for="item in cinemaList" :key="item.id">
+        <div>
+          <span>{{item.nm}}</span>
+          <span class="q">
+            <span class="price">29.9</span>元起
+          </span>
+        </div>
+        <div class="address">
+          <span>{{item.addr}}</span>
+          <span>{{item.distance}}</span>
+          <div class="card">
+            <!-- 过滤, 只留tag里值为1 的 key 是键-->
+            <div v-for="(num, key) in item.tag" v-if="num===1" :class="key | classCard" :key="key">{{key | formateCard}}</div>
+          </div>
+        </div>
       </li>
     </ul>
   </div>
@@ -27,15 +43,67 @@ export default {
   name: "CiList",
 
   data() {
-    return {};
+    return {
+      cinemaList: []
+    };
   },
-  methods: {}
+  mounted() {
+    this.axios.get("/api/cinemaList?city=10").then(res => {
+      var msg = res.data.msg;
+      if (msg === "ok") {
+        this.cinemaList = res.data.data.cinemas;
+      }
+    });
+  },
+  methods: {},
+
+  // 局部过滤器
+  filters: {
+    //  过滤键值 的  键
+    formateCard(key) {
+      var card = [
+        { key: "allowRefund", value: "折扣卡" },
+        // { key: "buyout", value: "购买" },
+        // { key: "cityCardTag", value: "城市" },
+        // { key: "deal", value: "改签" },
+        { key: "endorse", value: "签名" },
+        // { key: "giftTag", value: "改签" },
+        // { key: "hallType", value: "改签" },
+        // { key: "hallTypeVOList", value: "改签" },
+        { key: "sell", value: "抽奖" },
+        { key: "snack", value: "小吃" }
+        // { key: "vipTag", value: "折扣卡" },
+      ];
+      for (var i = 0; i < card.length; i++) {
+        if (card[i].key === key) {
+          return card[i].value;
+        }
+      }
+
+      return "";
+    },
+
+    // 过滤 键 添加不同的类  改变边框颜色
+    classCard(key) {
+      var card = [
+        { key: "allowRefund", value: "or" },
+        { key: "endorse", value: "bl" },
+        { key: "sell", value: "or" },
+        { key: "snack", value: "bl" }
+      ];
+      for (var i = 0; i < card.length; i++) {
+        if (card[i].key === key) {
+          return card[i].value;
+        }
+      }
+      return "";
+    }
+  }
 };
 </script>
 
 
 <style scoped>
-
 .cinema_body {
   flex: 1;
   overflow: auto;
@@ -61,6 +129,15 @@ export default {
   font-size: 13px;
   color: #666;
 }
+
+.cinema_body .address span:nth-of-type(1) {
+  display: inline-block;
+  width: 80%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .cinema_body .address span:nth-of-type(2) {
   float: right;
 }
