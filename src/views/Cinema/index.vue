@@ -5,18 +5,21 @@
     <div class="content">
       <div class="cinema_menu">
         <div class="city_switch">
-          全城<i class="iconfont icon-lower-triangle"></i>
+          全城
+          <i class="iconfont icon-lower-triangle"></i>
         </div>
         <div class="brand_switch">
-          品牌<i class="iconfont icon-lower-triangle"></i>
+          品牌
+          <i class="iconfont icon-lower-triangle"></i>
         </div>
         <div class="feature_switch">
-          特色<i class="iconfont icon-lower-triangle"></i>
+          特色
+          <i class="iconfont icon-lower-triangle"></i>
         </div>
       </div>
-      <CiList/>
+      <CiList />
     </div>
-   
+
     <TabBar />
   </div>
 </template>
@@ -28,19 +31,32 @@
 import Header from "@/components/Header";
 import TabBar from "@/components/TabBar";
 
-import CiList from '@/components/CiList'
+import CiList from "@/components/CiList";
 export default {
   name: "cinema",
   // 引入组件第二步
   components: {
     Header,
     TabBar,
-    CiList
+    CiList,
   },
   data() {
     return {};
   },
-  methods: {}
+  // mounted() {
+  //   // 1. 获取数据
+  //   // this.axios.get("/api/movieComingList?cityId=10").then(res => {
+  //   this.axios.get("/data/cinema.json").then((res) => {
+  //     // 2. 拿到数据
+  //     var msg = res.data.msg;
+  //     // 2.1 判断
+  //     if (msg === "ok") {
+  //       this.cinema = res.data.data.cinemas;
+  //     }
+  //   });
+  // },
+
+  methods: {},
 };
 </script>
 

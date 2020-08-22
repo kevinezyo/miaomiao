@@ -29,7 +29,12 @@
           <span>{{item.distance}}</span>
           <div class="card">
             <!-- 过滤, 只留tag里值为1 的 key 是键-->
-            <div v-for="(num, key) in item.tag" v-if="num===1" :class="key | classCard" :key="key">{{key | formateCard}}</div>
+            <div
+              v-for="(num, key) in item.tag"
+              :class="key | classCard"
+              :key="key"
+              v-show="num===1"
+            >{{key | formateCard}}</div>
           </div>
         </div>
       </li>
@@ -44,11 +49,12 @@ export default {
 
   data() {
     return {
-      cinemaList: []
+      cinemaList: [],
     };
   },
   mounted() {
-    this.axios.get("/api/cinemaList?city=10").then(res => {
+    // this.axios.get("/api/cinemaList?city=10").then(res => {
+    this.axios.get("/data/cinema.json").then((res) => {
       var msg = res.data.msg;
       if (msg === "ok") {
         this.cinemaList = res.data.data.cinemas;
@@ -71,7 +77,7 @@ export default {
         // { key: "hallType", value: "改签" },
         // { key: "hallTypeVOList", value: "改签" },
         { key: "sell", value: "抽奖" },
-        { key: "snack", value: "小吃" }
+        { key: "snack", value: "小吃" },
         // { key: "vipTag", value: "折扣卡" },
       ];
       for (var i = 0; i < card.length; i++) {
@@ -89,7 +95,7 @@ export default {
         { key: "allowRefund", value: "or" },
         { key: "endorse", value: "bl" },
         { key: "sell", value: "or" },
-        { key: "snack", value: "bl" }
+        { key: "snack", value: "bl" },
       ];
       for (var i = 0; i < card.length; i++) {
         if (card[i].key === key) {
@@ -97,8 +103,8 @@ export default {
         }
       }
       return "";
-    }
-  }
+    },
+  },
 };
 </script>
 

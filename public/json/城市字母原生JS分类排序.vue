@@ -248,17 +248,17 @@
         <li>Y</li>
         <li>Z</li>
       </ul>
-    </div> -->
+    </div>-->
 
     <div class="city_list">
       <div class="city_hot">
         <h2>热门城市</h2>
         <ul class="clearfix">
-          <li v-for="item in hotList" :key='item.id'>{{item.nm}}</li>
+          <li v-for="item in hotList" :key="item.id">{{item.nm}}</li>
         </ul>
       </div>
 
-      <div class="city_sort" ref='city_sort'>
+      <div class="city_sort" ref="city_sort">
         <div v-for="item in cityList" :key="item.index">
           <h2>{{item.index}}</h2>
           <ul>
@@ -268,11 +268,15 @@
       </div>
     </div>
     <div class="city_index">
-        <ul>
-          <!-- for 里的index 是点击的字母下标 ,和Key里的不是一个, touchshart 手机点击事件 -->
-          <li v-for="(item, index) in cityList" :key="item.index" @touchstart="handleToIndex(index)">{{item.index}}</li>
-        </ul>
-      </div>
+      <ul>
+        <!-- for 里的index 是点击的字母下标 ,和Key里的不是一个, touchshart 手机点击事件 -->
+        <li
+          v-for="(item, index) in cityList"
+          :key="item.index"
+          @touchstart="handleToIndex(index)"
+        >{{item.index}}</li>
+      </ul>
+    </div>
   </div>
 </template>
 
@@ -281,10 +285,9 @@
 export default {
   name: "city",
   mounted() {
-    // this.axios.get("/api/cityList").then((res) => {
-      this.axios.get("/data/city.json").then((res) => {
+    this.axios.get("/api/cityList").then(res => {
       // 原生JS 实现地区按字母分类
-      console.log(res);
+      // console.log(res);
       // 1. 做个判断, 请求数据是否正常
       var msg = res.data.msg;
       if (msg === "ok") {
@@ -380,9 +383,9 @@ export default {
     },
 
     // 右边字母点击 对应字母定位最顶端事件
-    handleToIndex(index){
-      // 通过$refs 方法获得 h2  ,上面必须添加ref 属性 
-      var h2 = this.$refs.city_sort.getElementsByTagName('h2');
+    handleToIndex(index) {
+      // 通过$refs 方法获得 h2  ,上面必须添加ref 属性
+      var h2 = this.$refs.city_sort.getElementsByTagName("h2");
       // 设置父元素滚动的位置
       this.$refs.city_sort.parentNode.scrollTop = h2[index].offsetTop;
     }

@@ -49,7 +49,8 @@ export default {
   },
   mounted() {
     // 1. 获取数据
-    this.axios.get("/api/movieOnInfoList?cityId=10").then((res) => {
+    // this.axios.get("/api/movieOnInfoList?cityId=10").then((res) => {
+    this.axios.get("/data/hotMovies.json").then((res) => {
       //  2. 拿到数据结果
       var msg = res.data.msg;
       //  2.1 判断
