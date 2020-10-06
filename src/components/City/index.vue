@@ -248,31 +248,48 @@
         <li>Y</li>
         <li>Z</li>
       </ul>
-    </div> -->
+    </div>-->
 
     <div class="city_list">
-      <div class="city_hot">
-        <h2>热门城市</h2>
-        <ul class="clearfix">
-          <li v-for="item in hotList" :key='item.id'>{{item.nm}}</li>
-        </ul>
-      </div>
-
-      <div class="city_sort" ref='city_sort'>
-        <div v-for="item in cityList" :key="item.index">
-          <h2>{{item.index}}</h2>
-          <ul>
-            <li v-for="itemList in item.list" :key="itemList.id">{{itemList.nm}}</li>
-          </ul>
+      <Loading v-if="isLoading" />
+      <Scroller v-else ref="city_List">
+        <div>
+          <div class="city_hot">
+            <h2>热门城市</h2>
+            <ul class="clearfix">
+              <li
+                v-for="item in hotList"
+                :key="item.id"
+                @tap="handleToCity(item.nm, item.id)"
+              >{{item.nm}}</li>
+            </ul>
+          </div>
+          <div class="city_sort" ref="city_sort">
+            <div v-for="item in cityList" :key="item.index">
+              <h2>{{item.index}}</h2>
+              <ul>
+                <li
+                  v-for="itemList in item.list"
+                  :key="itemList.id"
+                  @tap="handleToCity(itemList.nm, itemList.id)"
+                >{{itemList.nm}}</li>
+              </ul>
+            </div>
+          </div>
         </div>
-      </div>
+      </Scroller>
     </div>
+
     <div class="city_index">
-        <ul>
-          <!-- for 里的index 是点击的字母下标 ,和Key里的不是一个, touchshart 手机点击事件 -->
-          <li v-for="(item, index) in cityList" :key="item.index" @touchstart="handleToIndex(index)">{{item.index}}</li>
-        </ul>
-      </div>
+      <ul>
+        <!-- for 里的index 是点击的字母下标 ,和Key里的不是一个, touchshart 手机点击事件 -->
+        <li
+          v-for="(item, index) in cityList"
+          :key="item.index"
+          @touchstart="handleToIndex(index)"
+        >{{item.index}}</li>
+      </ul>
+    </div>
   </div>
 </template>
 
@@ -281,26 +298,41 @@
 export default {
   name: "city",
   mounted() {
-    // this.axios.get("/api/cityList").then((res) => {
+    // 获取本地存储数据
+    var cityList = window.localStorage.getItem("citiList");
+    var hotList = window.localStorage.getItem("hotList");
+
+    if (cityList && hotList) {
+      this.cityList = JSON.parse(cityList);
+      this.hotList = JSON.parse(hotList);
+      this.isLoading = false;
+    } else {
+      // this.axios.get("/api/cityList").then((res) => {
       this.axios.get("/data/city.json").then((res) => {
-      // 原生JS 实现地区按字母分类
-      console.log(res);
-      // 1. 做个判断, 请求数据是否正常
-      var msg = res.data.msg;
-      if (msg === "ok") {
-        var cities = res.data.data.cities;
-        //获得返回结构集 调用分类方法
-        var { cityList, hotList } = this.formatCityList(cities);
-        // 数据绑定  --映射
-        this.cityList = cityList;
-        this.hotList = hotList;
-      }
-    });
+        // 原生JS 实现地区按字母分类
+        // console.log(res);
+        // 1. 做个判断, 请求数据是否正常
+        var msg = res.data.msg;
+        if (msg === "ok") {
+          var cities = res.data.data.cities;
+          this.isLoading = false;
+          //获得返回结构集 调用分类方法
+          var { cityList, hotList } = this.formatCityList(cities);
+          // 数据绑定  --映射
+          this.cityList = cityList;
+          this.hotList = hotList;
+          // 把数据存储到本地
+          window.localStorage.setItem("cityList", JSON.stringify(cityList));
+          window.localStorage.setItem("hotList", JSON.stringify(hotList));
+        }
+      });
+    }
   },
   data() {
     return {
       cityList: [],
-      hotList: []
+      hotList: [],
+      isLoading: true,
     };
   },
   methods: {
@@ -329,7 +361,7 @@ export default {
           //  不在结构集中,走if
           cityList.push({
             index: firstLetter,
-            list: [{ nm: cities[i].nm, id: cities[i].id }]
+            list: [{ nm: cities[i].nm, id: cities[i].id }],
           });
         } else {
           // 累加到已有索引
@@ -373,20 +405,27 @@ export default {
       //  把得到的结构反馈出去
       return {
         cityList,
-        hotList
+        hotList,
       };
       // console.log(cityList);
       // console.log(hotList);
     },
 
     // 右边字母点击 对应字母定位最顶端事件
-    handleToIndex(index){
-      // 通过$refs 方法获得 h2  ,上面必须添加ref 属性 
-      var h2 = this.$refs.city_sort.getElementsByTagName('h2');
+    handleToIndex(index) {
+      // 通过$refs 方法获得 h2  ,上面必须添加ref 属性
+      var h2 = this.$refs.city_sort.getElementsByTagName("h2");
       // 设置父元素滚动的位置
-      this.$refs.city_sort.parentNode.scrollTop = h2[index].offsetTop;
-    }
-  }
+      // this.$refs.city_sort.parentNode.scrollTop = h2[index].offsetTop;
+      this.$refs.city_List.toScrollTop(-h2[index].offsetTop);
+    },
+    handleToCity(nm, id) {
+      this.$store.commit("city/CITY_INFO", { nm, id });
+      window.localStorage.setItem("nowNm", nm);
+      window.localStorage.setItem("nowId", id);
+      this.$router.push("/movie/nowplaying");
+    },
+  },
 };
 </script>
 

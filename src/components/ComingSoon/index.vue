@@ -1,7 +1,9 @@
 <template>
   <div class="movie_body">
-    <ul>
-      <!-- <li>
+    <Loading v-if="isLoading" />
+    <Scroller v-else>
+      <ul>
+        <!-- <li>
         <div class="pic_show">
           <img src="../../../public/images/movie_1.jpg" alt />
         </div>
@@ -15,23 +17,24 @@
           <p>今天55家影院放映607场</p>
         </div>
         <div class="btn_pre">预约</div>
-      </li>-->
-      <li v-for="item in comingList" :key="item.id">
-        <div class="pic_show">
-          <img :src="item.img | setWH('128.180')" alt />
-        </div>
-        <div class="info_list">
-          <h2>{{item.nm}}</h2>
-          <p>
-            观众评
-            <span class="grade">{{item.sc}}</span>
-          </p>
-          <p>主演: {{item.star}}</p>
-          <p> 上映时间:{{item.comingTitle}}</p>
-        </div>
-        <div class="btn_pre">预约</div>
-      </li>
-    </ul>
+        </li>-->
+        <li v-for="item in comingList" :key="item.id">
+          <div class="pic_show">
+            <img :src="item.img | setWH('128.180')" alt />
+          </div>
+          <div class="info_list">
+            <h2>{{item.nm}}</h2>
+            <p>
+              观众评
+              <span class="grade">{{item.sc}}</span>
+            </p>
+            <p>主演: {{item.star}}</p>
+            <p>上映时间:{{item.comingTitle}}</p>
+          </div>
+          <div class="btn_pre">预约</div>
+        </li>
+      </ul>
+    </Scroller>
   </div>
 </template>
 
@@ -42,22 +45,35 @@ export default {
 
   data() {
     return {
-      comingList: []
+      comingList: [],
+      isLoading: true,
+      prevCityid: -1,
     };
   },
-  mounted() {
+  activated() {
     // 1. 获取数据
     // this.axios.get("/api/movieComingList?cityId=10").then(res => {
-    this.axios.get("/data/comingSoon.json").then(res => {
-      // 2. 拿到数据
-      var msg = res.data.msg;
-      // 2.1 判断
-      if (msg === "ok") {
-        this.comingList = res.data.data.comingList;
-      }
-    });
+    // 判断 新就ID是否相等
+    var cityId = this.$store.state.city.id;
+    if (this.prevCityid === cityId) {
+      return;
+    }
+    this.isLoading = true;
+
+    this.axios
+      .get("/data/comingSoon.json?cityId=" + cityId)
+      .then((res) => {
+        // 2. 拿到数据
+        var msg = res.data.msg;
+        // 2.1 判断
+        if (msg === "ok") {
+          this.comingList = res.data.data.comingList;
+          this.isLoading = false;
+          this.prevCityid = cityId;
+        }
+      });
   },
-  methods: {}
+  methods: {},
 };
 </script>
 

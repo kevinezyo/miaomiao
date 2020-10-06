@@ -1,7 +1,9 @@
 <template>
   <div class="cinema_body">
-    <ul>
-      <!-- <li>
+    <Loading v-if="isLoading" />
+    <Scroller v-else>
+      <ul>
+        <!-- <li>
         <div>
           <span>大地影院(澳东世纪店)</span>
           <span class="q">
@@ -16,29 +18,30 @@
             <div>折扣卡</div>
           </div>
         </div>
-      </li>-->
-      <li v-for="item in cinemaList" :key="item.id">
-        <div>
-          <span>{{item.nm}}</span>
-          <span class="q">
-            <span class="price">29.9</span>元起
-          </span>
-        </div>
-        <div class="address">
-          <span>{{item.addr}}</span>
-          <span>{{item.distance}}</span>
-          <div class="card">
-            <!-- 过滤, 只留tag里值为1 的 key 是键-->
-            <div
-              v-for="(num, key) in item.tag"
-              :class="key | classCard"
-              :key="key"
-              v-show="num===1"
-            >{{key | formateCard}}</div>
+        </li>-->
+        <li v-for="item in cinemaList" :key="item.id">
+          <div>
+            <span>{{item.nm}}</span>
+            <span class="q">
+              <span class="price">29.9</span>元起
+            </span>
           </div>
-        </div>
-      </li>
-    </ul>
+          <div class="address">
+            <span>{{item.addr}}</span>
+            <span>{{item.distance}}</span>
+            <div class="card">
+              <!-- 过滤, 只留tag里值为1 的 key 是键-->
+              <div
+                v-for="(num, key) in item.tag"
+                :class="key | classCard"
+                :key="key"
+                v-show="num===1"
+              >{{key | formateCard}}</div>
+            </div>
+          </div>
+        </li>
+      </ul>
+    </Scroller>
   </div>
 </template>
 
@@ -50,14 +53,23 @@ export default {
   data() {
     return {
       cinemaList: [],
+      isLoading: true,
+      prevCityId: -1,
     };
   },
-  mounted() {
+  activated() {
+    var cityId = this.$store.state.city.id;
+    if (this.prevCityId === cityId) {
+      return;
+    }
+    this.isLoading = true;
     // this.axios.get("/api/cinemaList?city=10").then(res => {
-    this.axios.get("/data/cinema.json").then((res) => {
+    this.axios.get("/data/cinema.json?cityId=" + cityId).then((res) => {
       var msg = res.data.msg;
       if (msg === "ok") {
         this.cinemaList = res.data.data.cinemas;
+        this.isLoading = false;
+        this.prevCityId = cityId;
       }
     });
   },

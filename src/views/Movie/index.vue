@@ -5,7 +5,7 @@
     <div id="content">
       <div class="movie_menu">
         <router-link tag="div" to="/movie/city" class="city_name">
-          <span>大连</span>
+          <span>{{$store.state.city.nm}}</span>
           <i class="iconfont icon-lower-triangle"></i>
         </router-link>
         <div class="hot_swtich">
@@ -19,9 +19,8 @@
       <keep-alive>
         <router-view />
       </keep-alive>
-      
     </div>
-    
+
     <TabBar />
   </div>
 </template>
@@ -31,20 +30,68 @@
 import Header from "@/components/Header";
 import TabBar from "@/components/TabBar";
 
-import NowPlaying from '@/components/NowPlaying'
+// 引入弹窗插件
+import { messageBox } from "@/components/JS";
+
+import NowPlaying from "@/components/NowPlaying";
 export default {
   name: "movie",
   //  引入组件第二步
   components: {
     Header,
     TabBar,
-    NowPlaying
+    NowPlaying,
+  },
+
+  mounted() {
+    // messageBox({
+    //   title: "定位",
+    //   content: "沈阳",
+    //   cancel: "取消",
+    //   ok: "切换城市",
+    //   handleCancel(){
+    //     console.log('haha');
+    //   },
+    //   handlerOk(){
+    //     console.log(222);
+    //   }
+    // });
+    // 3秒后弹窗定位  不用马上弹出
+    setTimeout(() => {
+      //  获取本地数据,  前面的 ../ 等前缀都不需要, 直接在 / data中取
+      this.axios.get("/data/getLocation.json").then((res) => {
+        var msg = res.data.msg;
+        if (msg === "ok") {
+          var nm = res.data.data.nm;
+          var id = res.data.data.id;
+          // console.log(res.data.data.nm);
+          if (this.$store.state.city.id == id) {
+            return;
+          }
+          messageBox({
+            title: "定位",
+            content: nm,
+            cancel: "取消",
+            ok: "切换城市",
+            // handleCancel() {
+            //   console.log("haha");
+            // },
+            handlerOk() {
+              //  修改缓存
+              window.localStorage.setItem("nowNm", nm);
+              window.localStorage.setItem("nowId", id);
+              window.location.reload();
+            },
+          });
+        }
+      });
+    }, 3000);
   },
 
   data() {
     return {};
   },
-  methods: {}
+  methods: {},
 };
 </script>
 
@@ -110,8 +157,8 @@ export default {
   border-bottom: 2px #ef4238 solid;
 }
 
-.movie_menu div.router-link-active{
-   color: #ef4238;
+.movie_menu div.router-link-active {
+  color: #ef4238;
   border-bottom: 2px #ef4238 solid;
 }
 .movie_menu .search_entry i {
